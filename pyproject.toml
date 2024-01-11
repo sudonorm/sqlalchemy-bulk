@@ -1,0 +1,60 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sqlalchemybulk"
+version = "0.1.0"
+description = "Perform CRUD operations with SQLAlchemy"
+readme = "README.md"
+authors = [{ name = "sudonorm", email = "sudonorm@protonmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Database :: Front-Ends",
+]
+keywords = ["database", "sqlalchemy", "upsert", "bulk", "orm", "alembic"]
+dependencies = ["SQLAlchemy > 2.0.0", "alembic > 1.9.0", "pandas > 2.0.0", "numpy", "packaging", "python-dotenv"]
+requires-python = ">=3.7"
+
+    [project.optional-dependencies]
+    build = ["build", "twine"]
+    dev   = ["black", "bumpver", "isort", "mypy", "pytest"]
+
+    [project.urls]
+    repository    = "https://github.com/sudonorm/sqlalchemy-bulk"
+
+
+[tool.bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "bump version {old_version} -> {new_version}"
+commit          = false
+tag             = false
+push            = false
+
+    [tool.bumpver.file_patterns]
+    "pyproject.toml" = [
+        'current_version = "{version}"',
+        'version = "{version}"',
+    ]
+    "src/sqlalchemybulk/__init__.py" = ["{version}"]
+
+[tool.isort]
+profile                   = "black"
+import_heading_stdlib     = "Standard library imports"
+import_heading_thirdparty = "Third party imports"
+
+[tool.mypy]
+strict = true
