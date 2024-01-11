@@ -1,0 +1,11 @@
+pandas
+numpy
+SQLAlchemy
+alembic
+packaging
+bumpver
+build
+twine
+ipykernel
+notebook
+python-dotenv

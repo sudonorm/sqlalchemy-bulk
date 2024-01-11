@@ -1,0 +1,7 @@
+bumpver
+build
+twine
+pytest
+black
+isort
+mypy
