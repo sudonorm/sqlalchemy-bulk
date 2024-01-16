@@ -1,6 +1,6 @@
 # sqlalchemy-bulk
 
-_Perform Create, Update, Read, and Delete operations easily using the SQLAlchemy orm_
+*Perform Create, Update, Read, and Delete operations easily using the SQLAlchemy orm*
 
 ---
 
