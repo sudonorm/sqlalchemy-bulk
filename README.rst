@@ -1,10 +1,12 @@
-# sqlalchemy-bulk
+sqlalchemy-bulk
+==================
 
 *Perform Create, Update, Read, and Delete operations easily using the SQLAlchemy orm*
 
 ---
 
-## Installation
+Installation
+-------------
 
 To install via pip::
 
@@ -22,7 +24,8 @@ Or download the dource code and use the `setup.py` file::
     cd sqlalchemy-bulk/
     python setup.py install
 
-## Basic usage
+Basic usage
+-----------
 
 .. code:: python
 
@@ -52,6 +55,7 @@ Or download the dource code and use the `setup.py` file::
     query = delete(dataModel.Address).where(dataModel.Address.postalZip == "15143")
     delete_data.delete_data_on_condition(dbTable="dataModel.Address", statement=query)
 
-## Bugs, requests, questions, etc.
+Bugs, requests, questions, etc.
+-------------------------------
 
-Please create an `issue on GitHub <https://github.com/sudonorm/sqlalchemy-bulk/issues>`\_.
+Please create an `issue on GitHub <https://github.com/sudonorm/sqlalchemy-bulk/issues>`_.
