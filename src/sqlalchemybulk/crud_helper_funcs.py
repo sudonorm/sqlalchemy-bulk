@@ -20,6 +20,8 @@ from .helper_functions import HelperFunctions
 ## crud
 from .crud import BulkUpload
 
+import importlib
+
 
 class UploadData(HelperFunctions):
 
@@ -44,6 +46,7 @@ class UploadData(HelperFunctions):
         Usage: upload_info(df=gs_df, dbTable = "dataModel.Gs", cols_dict = {"go":"go"})
         """
 
+        dataModel = importlib.import_module(dbTable.split(".")[0])
         dbTable_evl = eval(dbTable)
 
         for col in list(cols_dict.keys()):
@@ -157,6 +160,7 @@ class DownloadData(HelperFunctions):
         """
 
         bulk = BulkUpload(dbTable, self.engine)
+        dataModel = importlib.import_module(dbTable.split(".")[0])
         dbTable_evl = eval(dbTable)
         data = pd.DataFrame(
             bulk.select_table(
@@ -167,14 +171,15 @@ class DownloadData(HelperFunctions):
                 subset_col=subset_col,
                 subset=subset,
                 subset_multi=subset_multi,
+                dataModel=dataModel,
             )
         )
 
         if len(data.columns) > 0 and len(data) > 0:
             if len(include_cols_list) > 0:
                 data = data[include_cols_list]
-        else:
-            data = pd.DataFrame()
+        # else:
+        #     data = pd.DataFrame()
 
         return data
 

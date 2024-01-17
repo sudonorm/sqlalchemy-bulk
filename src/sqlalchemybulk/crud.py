@@ -32,6 +32,13 @@ class BulkUpload:
         """dbTable is the name of the Table class e.g., dataModel.Store"""
 
         self.dbTableStr = dbTable
+        # self.model_name = dbTable.split(".")[0]
+        # self.model_path = r""
+
+        # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
+        # print(spec)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
 
         dataModel = importlib.import_module(dbTable.split(".")[0])
         self.dbTable = eval(dbTable)
@@ -172,6 +179,10 @@ class BulkUpload:
 
         tbl = str(self.dbTable)
         dataModel = importlib.import_module(tbl.split(".")[0])
+        # spec   = importlib.util.spec_from_file_location(tbl.split(".")[0], self.model_path)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
+
         tbl = tbl.split(".")[-1].replace(">", "").replace("'", "")
         tbl = f'{data_model_name}{"."}{tbl}'
 
@@ -316,6 +327,10 @@ class BulkUpload:
         """
         dbTable = self.dbTableStr
         dataModel = importlib.import_module(dbTable.split(".")[0])
+        # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
+
         all_row_ids = []
         records = [u for u in data.to_dict("records")]
         dbTable_eval = eval(dbTable)
@@ -352,6 +367,10 @@ class BulkUpload:
         """
         dbTable = self.dbTableStr
         dataModel = importlib.import_module(dbTable.split(".")[0])
+        # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
+
         records = [u for u in data.to_dict("records")]
         dbTable_eval = eval(dbTable)
 
@@ -425,6 +444,7 @@ class BulkUpload:
         subset_col: str = "",
         subset: list = [],
         subset_multi: dict = {},
+        dataModel: object = "",
     ) -> List[Dict]:
         """
         This function is used to select everything or a filtered output from a Table in the database.
@@ -475,7 +495,12 @@ class BulkUpload:
                 except:
                     pass
 
-        elements = res.to_dict(orient="records")
+        if len(res.dropna()) == 0:
+            orient = "list"
+        else:
+            orient = "records"
+
+        elements = res.to_dict(orient=orient)
         return elements
 
     def use_session(self, statement: Any) -> None:
@@ -497,6 +522,10 @@ class BulkUpload:
         """
 
         dataModel = importlib.import_module(table.split(".")[0])
+        # spec   = importlib.util.spec_from_file_location(table.split(".")[0], self.model_path)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
+
         table = eval(table)
         pk_col_of_table = eval(pk_col_of_table)
         with Session(self.engine) as session, session.begin():
@@ -516,6 +545,10 @@ class BulkUpload:
             lst_of_ids (List): this should be the list of primary keys to be updated
             valuesDict (Dict): this should be a dictionary of records which should match the columns of the table
         """
+
+        # spec   = importlib.util.spec_from_file_location(table.split(".")[0], self.model_path)
+        # dataModel = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(dataModel)
 
         dataModel = importlib.import_module(table.split(".")[0])
         table = eval(table)
