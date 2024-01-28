@@ -1,0 +1,53 @@
+name: Push sqlalchemybulk package to PyPI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sqlblk-pypi-publish:
+    name: Bump version and Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sqlalchemybulk
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Set up Python
+        uses: sudonorm/format-with-black@v1.2
+        with:
+          src: "."
+
+      - name: Check for modified files
+        id: git-check
+        run: echo "modified=$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)" >> $GITHUB_OUTPUT
+
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          echo "changes made"
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email '${{ github.actor }}@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.ACC_TKN }}@github.com/${{ github.repository }}
+          git commit -am "Automated black fixes"
+          git push
+
+      - name: Install pypa build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build && ls
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
