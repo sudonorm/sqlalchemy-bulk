@@ -29,14 +29,14 @@ jobs:
         id: git-check
         run: echo "modified=$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)" >> $GITHUB_OUTPUT
 
-      - name: Push changes
-        if: steps.git-check.outputs.modified == 'true'
-        run: |
-          echo "changes made"
-          git config --global user.name ${{ github.actor }}
-          git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          git commit -am "Automated black fixes"
-          git push origin HEAD:main
+      #   - name: Push changes
+      #     if: steps.git-check.outputs.modified == 'true'
+      #     run: |
+      #       echo "changes made"
+      #       git config --global user.name ${{ github.actor }}
+      #       git config --global user.email '${{ github.actor }}@users.noreply.github.com'
+      #       git commit -am "Automated black fixes"
+      #       git push origin HEAD:main
 
       - name: Install pypa build
         run: >-
