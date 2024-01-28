@@ -33,7 +33,6 @@ class BulkUpload:
 
         self.dbTableStr = dbTable
         # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
-        # print(spec)
         # dataModel = importlib.util.module_from_spec(spec)
         # spec.loader.exec_module(dataModel)
 
