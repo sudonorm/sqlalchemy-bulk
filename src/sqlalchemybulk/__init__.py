@@ -7,4 +7,4 @@ from .crud_helper_funcs import UploadData as UploadData
 from .crud_helper_funcs import DownloadData as DownloadData
 from .crud_helper_funcs import DeleteData as DeleteData
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"

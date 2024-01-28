@@ -58,7 +58,7 @@ class UploadData(HelperFunctions):
 
         df = self.replace_nan_with_none(df)
         bulk = BulkUpload(dbTable, self.engine)
-        bulk.upsert_table(dbTable_evl, df, cols_dict, create_pk=create_pk)
+        bulk.upsert_table(dataModel, df, cols_dict, create_pk)
 
     def upload_info_atomic(
         self,
@@ -124,9 +124,11 @@ class UploadData(HelperFunctions):
         Usage: get_max_id(dbTable = "dataModel.TableOne")
         """
 
+        dataModel = importlib.import_module(dbTable.split(".")[0])
+
         bulk = BulkUpload(dbTable, self.engine)
 
-        id = bulk.get_maximum_row_id()
+        id = bulk.get_maximum_row_id(dataModel=dataModel, data_model_name="dataModel")
         return id
 
 

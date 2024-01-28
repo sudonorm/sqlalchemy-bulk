@@ -32,9 +32,6 @@ class BulkUpload:
         """dbTable is the name of the Table class e.g., dataModel.Store"""
 
         self.dbTableStr = dbTable
-        # self.model_name = dbTable.split(".")[0]
-        # self.model_path = r""
-
         # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
         # print(spec)
         # dataModel = importlib.util.module_from_spec(spec)
@@ -168,7 +165,9 @@ class BulkUpload:
                 del group[group.index(marker) :]
             yield group
 
-    def get_maximum_row_id(self, data_model_name: str = "dataModel") -> int:
+    def get_maximum_row_id(
+        self, dataModel: Any, data_model_name: str = "dataModel"
+    ) -> int:
         """
         This function is used to return the maximum row used in a primary key column of a Table.
         It will only work if the primary key column is numeric
@@ -178,7 +177,8 @@ class BulkUpload:
         """
 
         tbl = str(self.dbTable)
-        dataModel = importlib.import_module(tbl.split(".")[0])
+        # dataModel = importlib.import_module(tbl.split(".")[0])
+        dataModel = dataModel
         # spec   = importlib.util.spec_from_file_location(tbl.split(".")[0], self.model_path)
         # dataModel = importlib.util.module_from_spec(spec)
         # spec.loader.exec_module(dataModel)
@@ -197,7 +197,11 @@ class BulkUpload:
             return max_row_id
 
     def upsert(
-        self, df: pd.DataFrame, create_pk: bool = True, surpress_print: bool = True
+        self,
+        dataModel: Any,
+        df: pd.DataFrame,
+        create_pk: bool = True,
+        surpress_print: bool = True,
     ) -> None:
         """
         The upsert function helps us to update or insert data in bulk. It works by taking a dataframe containing
@@ -233,7 +237,9 @@ class BulkUpload:
                 #     new[self.pk] = new[self.pk] + 1
 
         if create_pk:
-            max_row = self.get_maximum_row_id()
+            max_row = self.get_maximum_row_id(
+                dataModel=dataModel, data_model_name="dataModel"
+            )
 
             if not surpress_print:
                 print("max row is...", max_row)
@@ -295,7 +301,7 @@ class BulkUpload:
                     session.bulk_update_mappings(self.dbTable, batch)
 
     def upsert_table(
-        self, df: pd.DataFrame, cols_dict={}, create_pk: bool = True
+        self, dataModel: Any, df: pd.DataFrame, cols_dict={}, create_pk: bool = True
     ) -> None:
         """
         The upsert_table function helps us to update or insert data to a table. it uses the upsert() funtion to achieve this.
@@ -307,8 +313,11 @@ class BulkUpload:
             with static IDs which we do not want to autoincrement. By setting this to False, the primary key column is not created rather the
             one present in the dataframe is used. Defaults to True.
         """
+
         df = self.get_or_none(df=df.copy(), cols_dict=cols_dict, create_pk=create_pk)
-        self.upsert(df, create_pk=create_pk)
+        self.upsert(
+            dataModel, df, create_pk
+        )  ## TODO: add string db table here and split it in the get_max_row to get the name of the datamodel
 
     def atomic_bulk_upsert(
         self,
