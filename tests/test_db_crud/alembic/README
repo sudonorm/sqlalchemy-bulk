@@ -1,0 +1,8 @@
+Generic single-database configuration.
+
+To generate revisions py files after changes to the data model use:
+
+- Either run or import the `db/dataModel.py` file
+- Or we can use the `db/init_or_update_db.py` file in the `db` module
+  - In both cases, we need to change the `RUN_ONLY_MIGRATION` and `IS_SQLITE`, `RUN_MIGRATION` arguments in the `db/dataModel.py` file appropriately. Unless you know what you are doing, `DROP_ALEMBIC_TABLE_AND_STAMP_HEAD` should be False (this is used to force stamp a version in a drop-add fashion)
+  - For non SQLite databases, the `DB_URI` environment variable should be set. For SQLite databases, set the `SQLITE_DB_PATH` variable. The `ALEMBIC_PATH` variable also needs to be set. This should be the path in which the `alembic` folder is located
