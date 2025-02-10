@@ -18,11 +18,20 @@ Or download the source code and install manually::
     cd sqlalchemy-bulk/
     python -m pip install .
 
-Or download the dource code and use the `setup.py` file::
+Or download the source code and use the `setup.py` file::
 
     git clone https://github.com/sudonorm/sqlalchemy-bulk.git
     cd sqlalchemy-bulk/
     python setup.py install
+
+Be sure to add a .env to the root of the project with at least these variables (DB_URI, ALEMBIC_PATH):
+
+DB_URI="postgresql+psycopg2://username:password@host:port/database_name"
+ALEMBIC_PATH="<path/to/user/project/root/folder>"
+
+"SQLITE_DB_PATH" is optional, except you are testing with a SQLite DB.
+
+SQLITE_DB_PATH="<path/to/user/folder>/test.db"
 
 Basic usage
 -----------

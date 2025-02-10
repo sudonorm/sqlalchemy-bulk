@@ -81,9 +81,9 @@ class Migrate(Connection):
                         shutil.copy(
                             f, path_data + SLSH + "_archive" + SLSH + f.split(SLSH)[-1]
                         )
-                        print("file copied")
+                        # print("file copied")
                         os.remove(f)
-                        print("file removed")
+                        # print("file removed")
                     except:
                         pass
                 else:
@@ -127,9 +127,10 @@ class Migrate(Connection):
                             )
                             != 0
                         ):
-                            print(
-                                "Migration file already exists. Please run migration by setting the appropriate parameter!"
-                            )
+                            # print(
+                            #     "Migration file already exists. Please run migration by setting the appropriate parameter!"
+                            # )
+                            pass
                         else:
                             self.create_migrations(
                                 f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
@@ -148,9 +149,10 @@ class Migrate(Connection):
                             )
                             != 0
                         ):
-                            print(
-                                "Migration file already exists. Please run migration by setting the appropriate parameter!"
-                            )
+                            # print(
+                            #     "Migration file already exists. Please run migration by setting the appropriate parameter!"
+                            # )
+                            pass
                         else:
                             self.create_migrations(
                                 f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
@@ -189,9 +191,10 @@ class Migrate(Connection):
                                 )
                                 != 0
                             ):
-                                print(
-                                    "Migration file already exists. Please run migration by setting the appropriate parameter!"
-                                )
+                                # print(
+                                #     "Migration file already exists. Please run migration by setting the appropriate parameter!"
+                                # )
+                                pass
                             else:
                                 if self.drop_alembic_stamp_head:
                                     # self.drop_table(table_name="alembic_version", db_uri=f"sqlite:///{self.db_file_path}")
@@ -216,9 +219,10 @@ class Migrate(Connection):
                                 )
                                 != 0
                             ):
-                                print(
-                                    "Migration file already exists. Please run migration by setting the appropriate parameter!"
-                                )
+                                # print(
+                                #     "Migration file already exists. Please run migration by setting the appropriate parameter!"
+                                # )
+                                pass
                             else:
                                 if self.drop_alembic_stamp_head:
                                     # self.drop_table(table_name="alembic_version", db_uri=f"sqlite:///{self.db_file_path}")
