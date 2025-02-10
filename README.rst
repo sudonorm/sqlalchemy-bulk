@@ -24,9 +24,8 @@ Or download the source code and use the `setup.py` file::
     cd sqlalchemy-bulk/
     python setup.py install
 
-Be sure to add a .env to the root of the project with at least these variables (DB_URI, ALEMBIC_PATH):
+Be sure to add a .env to the root of the project with at least these variables (DB_URI, ALEMBIC_PATH)::
 
-.. code:: shell
     DB_URI="postgresql+psycopg2://username:password@host:port/database_name"
     ALEMBIC_PATH="<path/to/user/project/root/folder>"
 
