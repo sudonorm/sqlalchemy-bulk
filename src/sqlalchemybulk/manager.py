@@ -41,6 +41,7 @@ class Migrate(Connection):
         create_migration_file: bool = False,
         run_migration: bool = True,
         drop_alembic_stamp_head: bool = False,
+        print_exceptions: bool = False,
     ) -> None:
         self.script_location = script_location
         self.uri = uri
@@ -49,6 +50,7 @@ class Migrate(Connection):
         self.run_migration = run_migration
         self.create_migration_file = create_migration_file
         self.drop_alembic_stamp_head = drop_alembic_stamp_head
+        self.print_exceptions = print_exceptions
 
     def to_archive(self, path_data: str = r"", existingFile: str = r"") -> None:
         """
@@ -121,7 +123,7 @@ class Migrate(Connection):
                                 [
                                     x
                                     for x in glob(vrsns_path + "/*.py")
-                                    if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                    if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                     in x
                                 ]
                             )
@@ -133,7 +135,7 @@ class Migrate(Connection):
                             pass
                         else:
                             self.create_migrations(
-                                f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                             )
                         self.run_migrations()
 
@@ -143,7 +145,7 @@ class Migrate(Connection):
                                 [
                                     x
                                     for x in glob(vrsns_path + "/*.py")
-                                    if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                    if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                     in x
                                 ]
                             )
@@ -155,25 +157,29 @@ class Migrate(Connection):
                             pass
                         else:
                             self.create_migrations(
-                                f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                             )
 
                     elif not self.create_migration_file and self.run_migration:
                         try:
                             self.run_migrations()
                         except Exception as e:
-                            print(str(e))
-                            print(
-                                "The migration file with the revision id",
-                                str(e),
-                                "is missing. Check all the migration files to ensure one of them is not missing and try again.",
-                            )
+                            if self.print_exceptions:
+                                print(str(e))
+                                print(
+                                    "The migration file with the revision id",
+                                    str(e),
+                                    "is missing. Check all the migration files to ensure one of them is not missing and try again.",
+                                )
+                            else:
+                                pass
 
                     else:
                         pass
 
         except Exception as e:
-            print(str(e))
+            if self.print_exceptions:
+                print(str(e))
 
             if "Target database is not" in str(e):
                 # self.to_archive(path_data=vrsns_path, existingFile=glob(vrsns_path+'/*.py'))
@@ -185,7 +191,7 @@ class Migrate(Connection):
                                     [
                                         x
                                         for x in glob(vrsns_path + "/*.py")
-                                        if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                        if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                         in x
                                     ]
                                 )
@@ -203,7 +209,7 @@ class Migrate(Connection):
                                     )  ### forcefully stamp the head of the last known revision as the downgrade of this upgrade
 
                                 self.create_migrations(
-                                    f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                    f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                                 )
                             self.run_migrations()
 
@@ -213,7 +219,7 @@ class Migrate(Connection):
                                     [
                                         x
                                         for x in glob(vrsns_path + "/*.py")
-                                        if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                        if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                         in x
                                     ]
                                 )
@@ -231,19 +237,22 @@ class Migrate(Connection):
                                     )  ### forcefully stamp the head of the last known revision as the downgrade of this upgrade
 
                                 self.create_migrations(
-                                    f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                    f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                                 )
 
                         elif not self.create_migration_file and self.run_migration:
                             try:
                                 self.run_migrations()
                             except Exception as e:
-                                print(str(e))
-                                print(
-                                    "The migration file with the revision id",
-                                    str(e),
-                                    "is missing. Check all the migration files to ensure one of them is not missing and try again.",
-                                )
+                                if self.print_exceptions:
+                                    print(str(e))
+                                    print(
+                                        "The migration file with the revision id",
+                                        str(e),
+                                        "is missing. Check all the migration files to ensure one of them is not missing and try again.",
+                                    )
+                                else:
+                                    pass
 
                         else:
                             pass
