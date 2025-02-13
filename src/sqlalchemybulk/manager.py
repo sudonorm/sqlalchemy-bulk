@@ -17,6 +17,22 @@ from sqlalchemy import create_engine, text
 
 SLSH = os.sep
 
+def suppress_alembic_output():
+    # from alembic.config import Config
+    # Store original print_stdout
+    original_print = Config.print_stdout
+    
+    # Replace with no-op function
+    Config.print_stdout = lambda *args, **kwargs: None
+    
+    return original_print
+
+def restore_alembic_output(original_print):
+    # from alembic.config import Config
+    Config.print_stdout = original_print
+
+# # Replace with no-op function
+# Config.print_stdout = lambda *args, **kwargs: None
 
 class Connection:
     def create_connection(self, path_to_db_file: str) -> None:
@@ -112,8 +128,9 @@ class Migrate(Connection):
             if not os.path.exists(self.db_file_path):
                 self.create_connection(self.db_file_path)
 
+        
         has_changes = self.check_for_migrations()
-
+        
         try:
             if not "alembic" in sys.modules["__main__"].__file__:
                 if has_changes:
@@ -262,9 +279,12 @@ class Migrate(Connection):
         config = Config()
         config.set_main_option("sqlalchemy.url", self.uri)
         config.set_main_option("script_location", self.script_location)
-
+        # config.print_stdout = lambda *args, **kwargs: None
+        original_print = suppress_alembic_output()
+        
         try:
             command.check(config)
+            restore_alembic_output(original_print)
             return False
         except:
             return True
@@ -326,3 +346,4 @@ class Migrate(Connection):
         config.set_main_option("sqlalchemy.url", self.uri)
         config.set_main_option("script_location", self.script_location)
         command.upgrade(config, "head")
+

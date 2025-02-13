@@ -24,7 +24,6 @@ import importlib
 
 
 class UploadData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
     """
@@ -40,14 +39,19 @@ class UploadData(HelperFunctions):
         create_pk: bool = True,
         drop_na: bool = True,
         drop_duplicate_entries: bool = False,
+        number_of_inserts: int = 19999,
     ):
         """
         General upload function which should be able to upload anything thrown at it
         Usage: upload_info(df=gs_df, dbTable = "dataModel.Gs", cols_dict = {"go":"go"})
         """
 
-        dataModel = importlib.import_module(dbTable.split(".")[0])
-        dbTable_evl = eval(dbTable)
+        # dataModel = importlib.import_module(dbTable.split(".")[0])
+        # dbTable_evl = eval(dbTable)
+
+        module_name, class_name = dbTable.split(".") ### changed
+        dataModel = importlib.import_module(module_name)  ### changed
+        dbTable_evl = getattr(dataModel, class_name)  ### changed
 
         for col in list(cols_dict.keys()):
             if drop_na:
@@ -57,7 +61,7 @@ class UploadData(HelperFunctions):
                 df = df[~df[col].duplicated()].reset_index(drop=True)
 
         df = self.replace_nan_with_none(df)
-        bulk = BulkUpload(dbTable, self.engine)
+        bulk = BulkUpload(dbTable, self.engine, number_of_inserts)
         bulk.upsert_table(dataModel, df, cols_dict, create_pk)
 
     def upload_info_atomic(
@@ -66,6 +70,7 @@ class UploadData(HelperFunctions):
         df: pd.DataFrame = pd.DataFrame(),
         unique_idx_elements: list = [],
         column_update_fields: list = [],
+        number_of_inserts: int = 19999,
     ) -> List[int]:
         """
         General upload function which should be able to upload anything thrown at it
@@ -94,7 +99,7 @@ class UploadData(HelperFunctions):
         df = df.drop_duplicates(subset=unique_idx_elements).reset_index(drop=True)
 
         df = self.replace_nan_with_none(df)
-        bulk = BulkUpload(dbTable, self.engine)
+        bulk = BulkUpload(dbTable, self.engine, number_of_inserts)
 
         row_ids = bulk.atomic_bulk_upsert(df, unique_idx_elements, column_update_fields)
 
@@ -104,6 +109,7 @@ class UploadData(HelperFunctions):
         self,
         dbTable: str = "",
         df: pd.DataFrame = pd.DataFrame(),
+        number_of_inserts: int = 19999,
     ) -> List[int]:
         """
         General insert function to insert records. This should only be used when you are inserting new records.
@@ -113,7 +119,7 @@ class UploadData(HelperFunctions):
         """
 
         df = self.replace_nan_with_none(df)
-        bulk = BulkUpload(dbTable, self.engine)
+        bulk = BulkUpload(dbTable, self.engine, number_of_inserts)
 
         bulk.bulk_insert_many(df)
 
@@ -128,12 +134,11 @@ class UploadData(HelperFunctions):
 
         bulk = BulkUpload(dbTable, self.engine)
 
-        id = bulk.get_maximum_row_id(dataModel=dataModel, data_model_name="dataModel")
+        id = bulk.get_maximum_row_id(dataModel=dataModel, data_model_name=str(dbTable.split(".")[0]))
         return id
 
 
 class DownloadData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
     """
@@ -237,7 +242,6 @@ class DownloadData(HelperFunctions):
 
 
 class DeleteData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
 

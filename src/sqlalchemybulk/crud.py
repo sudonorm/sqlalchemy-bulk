@@ -25,7 +25,6 @@ meta = MetaData()
 
 
 class BulkUpload:
-
     """This class is a collection of methods designed to make database operations easier and faster."""
 
     def __init__(self, dbTable: str, engine: Any, number_of_inserts: int = 19999):
@@ -36,8 +35,9 @@ class BulkUpload:
         # dataModel = importlib.util.module_from_spec(spec)
         # spec.loader.exec_module(dataModel)
 
-        dataModel = importlib.import_module(dbTable.split(".")[0])
-        self.dbTable = eval(dbTable)
+        module_name, class_name = dbTable.split(".") ### changed
+        dataModel = importlib.import_module(module_name)  ### changed
+        self.dbTable = getattr(dataModel, class_name)  ### changed
         self.engine = engine
         self.pk = self.get_primary_key(self.dbTable)
         self.number_of_inserts = number_of_inserts
@@ -200,7 +200,7 @@ class BulkUpload:
         dataModel: Any,
         df: pd.DataFrame,
         create_pk: bool = True,
-        surpress_print: bool = True,
+        verbose: bool = False,
     ) -> None:
         """
         The upsert function helps us to update or insert data in bulk. It works by taking a dataframe containing
@@ -240,7 +240,7 @@ class BulkUpload:
                 dataModel=dataModel, data_model_name="dataModel"
             )
 
-            if not surpress_print:
+            if verbose:
                 print("max row is...", max_row)
 
             if max_row == 0:
@@ -266,7 +266,7 @@ class BulkUpload:
                 .reset_index(drop=True)
             )
 
-        if not surpress_print:
+        if verbose:
             print("new")
             print(new.head(5))
 
@@ -284,9 +284,10 @@ class BulkUpload:
             new = [u for u in new.to_dict("records")]
             with Session(self.engine) as session, session.begin():
                 for batch in self.chunked(new, self.number_of_inserts):
-                    print(
-                        f'{"Insert for batch of "}{len(batch)}{" is being worked on"}'
-                    )
+                    if verbose:
+                        print(
+                            f'{"Insert for batch of "}{len(batch)}{" is being worked on"}'
+                        )
                     session.bulk_insert_mappings(self.dbTable, batch)
 
         ## bulk update new records
@@ -294,9 +295,10 @@ class BulkUpload:
             update = [u for u in update.to_dict("records")]
             with Session(self.engine) as session, session.begin():
                 for batch in self.chunked(update, self.number_of_inserts):
-                    print(
-                        f'{"Update for batch of "}{len(batch)}{" is being worked on"}'
-                    )
+                    if verbose:
+                        print(
+                            f'{"Update for batch of "}{len(batch)}{" is being worked on"}'
+                        )
                     session.bulk_update_mappings(self.dbTable, batch)
 
     def upsert_table(
@@ -323,6 +325,7 @@ class BulkUpload:
         data: pd.DataFrame,
         unique_idx_elements: list,
         column_update_fields: list,
+        verbose: bool = False,
     ) -> List[int]:
         """Bulk upsert records using the sqlite_upsert method. This method has also been tested to work with not just SQLite but also postgresSQL
 
@@ -334,21 +337,30 @@ class BulkUpload:
             column_update_fields (list): a list of the columns to be updated.
         """
         dbTable = self.dbTableStr
-        dataModel = importlib.import_module(dbTable.split(".")[0])
+        # dataModel = importlib.import_module(dbTable.split(".")[0])
         # spec   = importlib.util.spec_from_file_location(self.model_name, self.model_path)
         # dataModel = importlib.util.module_from_spec(spec)
         # spec.loader.exec_module(dataModel)
 
+        module_name, class_name = dbTable.split(".") ### changed
+        dataModel = importlib.import_module(module_name)  ### changed
+        dbTable_eval = getattr(dataModel, class_name)  ### changed
+
         all_row_ids = []
         records = [u for u in data.to_dict("records")]
-        dbTable_eval = eval(dbTable)
-        dbTable_eval_id = eval(f'{self.dbTableStr}{".id"}')
+        # dbTable_eval = eval(dbTable)
+        # dbTable_eval_id = eval(f'{self.dbTableStr}{".id"}')
+
+        # dbTable_eval = eval(dbTable)
+        # dbTable_eval_id = eval(f'{self.dbTableStr}{".id"}')
+        dbTable_eval_id = getattr(dbTable_eval, "id") ### changed
 
         with Session(self.engine) as session, session.begin():
             for batch in self.chunked(records, self.number_of_inserts):
-                print(
-                    f'{"Insert or update for batch of "}{len(batch)}{" is being worked on"}'
-                )
+                if verbose:
+                    print(
+                        f'{"Insert or update for batch of "}{len(batch)}{" is being worked on"}'
+                    )
                 stmt = sqlite_upsert(dbTable_eval).values(batch)
                 column_dict_fields = {
                     column.name: column
@@ -366,7 +378,7 @@ class BulkUpload:
 
         return all_row_ids
 
-    def bulk_insert_many(self, data: pd.DataFrame) -> List[int]:
+    def bulk_insert_many(self, data: pd.DataFrame, verbose: bool = False) -> List[int]:
         """Bulk insert records using the insert method.
 
         Args:
@@ -384,9 +396,10 @@ class BulkUpload:
 
         with Session(self.engine) as session, session.begin():
             for batch in self.chunked(records, self.number_of_inserts):
-                print(
-                    f'{"Insert or update for batch of "}{len(batch)}{" is being worked on"}'
-                )
+                if verbose:
+                    print(
+                        f'{"Insert or update for batch of "}{len(batch)}{" is being worked on"}'
+                    )
 
                 try:
                     session.execute(insert(dbTable_eval), batch)
