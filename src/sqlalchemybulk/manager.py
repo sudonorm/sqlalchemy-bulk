@@ -17,6 +17,22 @@ from sqlalchemy import create_engine, text
 
 SLSH = os.sep
 
+def suppress_alembic_output():
+    # from alembic.config import Config
+    # Store original print_stdout
+    original_print = Config.print_stdout
+    
+    # Replace with no-op function
+    Config.print_stdout = lambda *args, **kwargs: None
+    
+    return original_print
+
+def restore_alembic_output(original_print):
+    # from alembic.config import Config
+    Config.print_stdout = original_print
+
+# # Replace with no-op function
+# Config.print_stdout = lambda *args, **kwargs: None
 
 class Connection:
     def create_connection(self, path_to_db_file: str) -> None:
@@ -41,6 +57,7 @@ class Migrate(Connection):
         create_migration_file: bool = False,
         run_migration: bool = True,
         drop_alembic_stamp_head: bool = False,
+        print_exceptions: bool = False,
     ) -> None:
         self.script_location = script_location
         self.uri = uri
@@ -49,6 +66,7 @@ class Migrate(Connection):
         self.run_migration = run_migration
         self.create_migration_file = create_migration_file
         self.drop_alembic_stamp_head = drop_alembic_stamp_head
+        self.print_exceptions = print_exceptions
 
     def to_archive(self, path_data: str = r"", existingFile: str = r"") -> None:
         """
@@ -110,8 +128,9 @@ class Migrate(Connection):
             if not os.path.exists(self.db_file_path):
                 self.create_connection(self.db_file_path)
 
+        
         has_changes = self.check_for_migrations()
-
+        
         try:
             if not "alembic" in sys.modules["__main__"].__file__:
                 if has_changes:
@@ -121,7 +140,7 @@ class Migrate(Connection):
                                 [
                                     x
                                     for x in glob(vrsns_path + "/*.py")
-                                    if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                    if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                     in x
                                 ]
                             )
@@ -133,7 +152,7 @@ class Migrate(Connection):
                             pass
                         else:
                             self.create_migrations(
-                                f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                             )
                         self.run_migrations()
 
@@ -143,7 +162,7 @@ class Migrate(Connection):
                                 [
                                     x
                                     for x in glob(vrsns_path + "/*.py")
-                                    if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                    if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                     in x
                                 ]
                             )
@@ -155,25 +174,29 @@ class Migrate(Connection):
                             pass
                         else:
                             self.create_migrations(
-                                f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                             )
 
                     elif not self.create_migration_file and self.run_migration:
                         try:
                             self.run_migrations()
                         except Exception as e:
-                            print(str(e))
-                            print(
-                                "The migration file with the revision id",
-                                str(e),
-                                "is missing. Check all the migration files to ensure one of them is not missing and try again.",
-                            )
+                            if self.print_exceptions:
+                                print(str(e))
+                                print(
+                                    "The migration file with the revision id",
+                                    str(e),
+                                    "is missing. Check all the migration files to ensure one of them is not missing and try again.",
+                                )
+                            else:
+                                pass
 
                     else:
                         pass
 
         except Exception as e:
-            print(str(e))
+            if self.print_exceptions:
+                print(str(e))
 
             if "Target database is not" in str(e):
                 # self.to_archive(path_data=vrsns_path, existingFile=glob(vrsns_path+'/*.py'))
@@ -185,7 +208,7 @@ class Migrate(Connection):
                                     [
                                         x
                                         for x in glob(vrsns_path + "/*.py")
-                                        if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                        if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                         in x
                                     ]
                                 )
@@ -203,7 +226,7 @@ class Migrate(Connection):
                                     )  ### forcefully stamp the head of the last known revision as the downgrade of this upgrade
 
                                 self.create_migrations(
-                                    f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                    f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                                 )
                             self.run_migrations()
 
@@ -213,7 +236,7 @@ class Migrate(Connection):
                                     [
                                         x
                                         for x in glob(vrsns_path + "/*.py")
-                                        if f'{time.strftime("%Y%m%d", time.gmtime())}{"_migration"}'
+                                        if f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{"_migration"}'
                                         in x
                                     ]
                                 )
@@ -231,19 +254,22 @@ class Migrate(Connection):
                                     )  ### forcefully stamp the head of the last known revision as the downgrade of this upgrade
 
                                 self.create_migrations(
-                                    f'{time.strftime("%Y%m%d", time.gmtime())}{" migration"}'
+                                    f'{time.strftime("%Y%m%d_%H%M%S", time.gmtime())}{" migration"}'
                                 )
 
                         elif not self.create_migration_file and self.run_migration:
                             try:
                                 self.run_migrations()
                             except Exception as e:
-                                print(str(e))
-                                print(
-                                    "The migration file with the revision id",
-                                    str(e),
-                                    "is missing. Check all the migration files to ensure one of them is not missing and try again.",
-                                )
+                                if self.print_exceptions:
+                                    print(str(e))
+                                    print(
+                                        "The migration file with the revision id",
+                                        str(e),
+                                        "is missing. Check all the migration files to ensure one of them is not missing and try again.",
+                                    )
+                                else:
+                                    pass
 
                         else:
                             pass
@@ -253,9 +279,12 @@ class Migrate(Connection):
         config = Config()
         config.set_main_option("sqlalchemy.url", self.uri)
         config.set_main_option("script_location", self.script_location)
-
+        # config.print_stdout = lambda *args, **kwargs: None
+        original_print = suppress_alembic_output()
+        
         try:
             command.check(config)
+            restore_alembic_output(original_print)
             return False
         except:
             return True
@@ -317,3 +346,4 @@ class Migrate(Connection):
         config.set_main_option("sqlalchemy.url", self.uri)
         config.set_main_option("script_location", self.script_location)
         command.upgrade(config, "head")
+

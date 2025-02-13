@@ -24,7 +24,6 @@ import importlib
 
 
 class UploadData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
     """
@@ -46,8 +45,12 @@ class UploadData(HelperFunctions):
         Usage: upload_info(df=gs_df, dbTable = "dataModel.Gs", cols_dict = {"go":"go"})
         """
 
-        dataModel = importlib.import_module(dbTable.split(".")[0])
-        dbTable_evl = eval(dbTable)
+        # dataModel = importlib.import_module(dbTable.split(".")[0])
+        # dbTable_evl = eval(dbTable)
+
+        module_name, class_name = dbTable.split(".") ### changed
+        dataModel = importlib.import_module(module_name)  ### changed
+        dbTable_evl = getattr(dataModel, class_name)  ### changed
 
         for col in list(cols_dict.keys()):
             if drop_na:
@@ -128,12 +131,11 @@ class UploadData(HelperFunctions):
 
         bulk = BulkUpload(dbTable, self.engine)
 
-        id = bulk.get_maximum_row_id(dataModel=dataModel, data_model_name="dataModel")
+        id = bulk.get_maximum_row_id(dataModel=dataModel, data_model_name=str(dbTable.split(".")[0]))
         return id
 
 
 class DownloadData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
     """
@@ -237,7 +239,6 @@ class DownloadData(HelperFunctions):
 
 
 class DeleteData(HelperFunctions):
-
     """The UploadData class is the core of the upload process. In this class, there are functions which are used to upload data
     to different tables in the database
 
